@@ -14,8 +14,8 @@ class Context(object):
     size = len(elements)
     weight_limit = 1000
     overweight_penalty = 50
-    mutation_rate = 0.1
-    mating_rate = 0.1       # only the top of this percentage of pairs will have a chance to mate
+    mutation_rate = 0.008
+    mating_rate = 0.7       # only the top of this percentage of pairs will have a chance to mate
 
 
 class Chromosome(object):
