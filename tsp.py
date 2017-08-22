@@ -9,6 +9,7 @@
 # |60, 200|20, 160|40, 120|60, 80|20, 40|20, 20|60, 20|100, 40|160, 20|200, 40|180, 60|120, 80|140, 140|180, 100|200, 160|180, 200|140, 180|100, 120|100, 160|80, 180|
 
 import random
+import math
 
 
 class City(object):
@@ -16,25 +17,44 @@ class City(object):
         self.name = name
         self.pos = pos
 
+    def __str__(self):
+        return self.name + str(self.pos)
+
 
 class Context(object):
     # The elements
-    elements = [City("London", (60, 200)), City("New York", (180, 200)), City("Tokyo", (80, 180)), City("Beijing", (140, 180)), City("Vancouver", (20, 160)), City("Paris", (100, 160)), City("Rome", (200, 160)), City("Seoul", (140, 140)), City("Tehran", (40, 120)), City("Bangkok", (100, 120)), City("Athens", (180, 100)), City("Moscow", (60, 80)), City("Hong Kong", (120, 80)), City("Stockholm", (180, 60)), City("Prague", (20, 40)), City("Berlin", (100, 40)), City("Taipei", (200, 40)), City("Athens", (20, 20)), City("Canberra", (60, 20)), City("Copenhagen", (160, 20))]
-    size = len(elements)
-    mutation_rate = 0.008
-    mating_rate = 0.7       # only the top of this percentage of pairs will have a chance to mate
+    def __init__(self, cities, mutation_rate = 0.05, mating_rate = 0.7):
+        self.elements = cities
+        self.size = len(self.elements)
+        self.mutation_rate = mutation_rate
+        self.mating_rate = mating_rate          # only the top of this percentage of pairs will have a chance to mate
 
+        # precalculate all distances between cities
+        self.distance = [[0 for b in range(self.size)] for a in range(self.size)]
+
+        for a in range(self.size):
+            for b in range(a+1, self.size):
+                self.distance[a][b] = self.distance[b][a] = \
+                    math.sqrt(
+                        (self.elements[a].pos[0]-self.elements[b].pos[0]) ** 2 +
+                        (self.elements[a].pos[1]-self.elements[b].pos[1]) ** 2
+                    )
+
+cxt = Context(
+    cities=[City("London", (60, 200)), City("New York", (180, 200)), City("Tokyo", (80, 180)), City("Beijing", (140, 180)), City("Vancouver", (20, 160)), City("Paris", (100, 160)), City("Rome", (200, 160)), City("Seoul", (140, 140)), City("Tehran", (40, 120)), City("Bangkok", (100, 120)), City("Athens", (180, 100)), City("Moscow", (60, 80)), City("Hong Kong", (120, 80)), City("Stockholm", (180, 60)), City("Prague", (20, 40)), City("Berlin", (100, 40)), City("Taipei", (200, 40)), City("Athens", (20, 20)), City("Canberra", (60, 20)), City("Copenhagen", (160, 20))],
+    mutation_rate=0.05,
+    mating_rate=0.7
+)
 
 class Chromosome(object):
     def __init__(self, genes):
-        self.genes = genes     # Genes
-        self.score = None
-        self.value = 0
-        self.weight = 0
-        self.mutate()
-        self.calc_score()
+        self.genes = genes      # Genes
+        self.score = None       # Distance
+        self.mutate()           #
+        self.calc_score()       # Distance
 
     def calc_score(self):
+        # 计算距离
         # 计算所有元素的value和weight之和
         self.value = sum([g*el.value for g, el in zip(self.genes, Context.elements)])
         self.weight = sum([g*el.weight for g, el in zip(self.genes, Context.elements)])
@@ -113,8 +133,10 @@ class Population(object):
 
 
 if __name__ == "__main__":
-    pop = Population()
-    while True:
-        pop.next_generation()
-        if pop.i_generation % 100 == 0:
-            pop.display()
+    print(cxt.distance[0][1], cxt.distance[1][0])
+    print(cxt.elements[0], cxt.elements[1])
+    # pop = Population()
+    # while True:
+    #     pop.next_generation()
+    #     if pop.i_generation % 100 == 0:
+    #         pop.display()
