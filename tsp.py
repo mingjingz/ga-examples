@@ -47,8 +47,12 @@ cxt = Context(
 )
 
 class Chromosome(object):
-    def __init__(self, genes):
+    def __init__(self, genes=None):
         self.genes = genes      # Genes
+        if not self.genes:
+            self.genes = list(range(0, cxt.size))
+            random.shuffle(self.genes)
+
         self.score = None       # Distance
         self.mutate()           #
         self.calc_score()       # Distance
@@ -56,15 +60,13 @@ class Chromosome(object):
     def calc_score(self):
         # 计算距离
         # 计算所有元素的value和weight之和
-        self.value = sum([g*el.value for g, el in zip(self.genes, Context.elements)])
-        self.weight = sum([g*el.weight for g, el in zip(self.genes, Context.elements)])
-
-        # 如果超重的话，就对超重的部分进行惩罚
-        self.score = self.value - max(self.weight - Context.weight_limit, 0) * Context.overweight_penalty
+        self.score = 0
+        for i in range(-1, cxt.size-1):
+            self.score += cxt.distance[self.genes[i]][self.genes[i+1]]
 
     def mate(self, spouse):
         # 随机产生pivot
-        pivot = random.randint(1, Context.size-1)
+        pivot = random.randint(1, cxt.size-1)
 
         # 然后将两段切开重组
         child1 = self.genes[0:pivot] + spouse.genes[pivot:]
@@ -73,10 +75,9 @@ class Chromosome(object):
         return Chromosome(child1), Chromosome(child2)
 
     def mutate(self):
-        for i in range(Context.size):
-            if random.random() < Context.mutation_rate:
-                self.genes[i] = int(not self.genes[i])
-        self.calc_score()
+        i = random.randint(0, cxt.size-1)
+        j = random.randint(0, cxt.size-1)
+        self.genes[i], self.genes[j] = self.genes[j], self.genes[i]
 
 
 class Population(object):
@@ -135,6 +136,11 @@ class Population(object):
 if __name__ == "__main__":
     print(cxt.distance[0][1], cxt.distance[1][0])
     print(cxt.elements[0], cxt.elements[1])
+
+    c = Chromosome()
+    print(c.genes)
+    c.mutate()
+    print(c.genes)
     # pop = Population()
     # while True:
     #     pop.next_generation()
