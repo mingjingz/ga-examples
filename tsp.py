@@ -58,23 +58,45 @@ class Chromosome(object):
         self.calc_score()       # Distance
 
     def calc_score(self):
-        # 计算距离
+    	# 计算距离
         # 计算所有元素的value和weight之和
         self.score = 0
         for i in range(-1, cxt.size-1):
             self.score += cxt.distance[self.genes[i]][self.genes[i+1]]
 
     def mate(self, spouse):
+    	# 3 5 7 2 4 1 6 0
+    	# 2 0 3 1 5 4 7 6 
+    	# 互换一部分
+
+    	# 3 5 7 2 0 1 4 6 -》 改变后半部分
+    	# 3 2 1 0 5 4 7 6 -》 改变前半部分
         # 随机产生pivot
-        pivot = random.randint(1, cxt.size-1)
+        # 但是至少一段要有2个城市
+        pivot = 10 #random.randint(2, cxt.size-2)
 
-        # 然后将两段切开重组
-        child1 = self.genes[0:pivot] + spouse.genes[pivot:]
-        child2 = spouse.genes[0:pivot] + self.genes[pivot:]
+        seg1 = []  #self.genes[0:pivot]
+        seg2 = []
 
+        for i in self.genes:
+        	if i in spouse.genes[0:pivot]:
+        		seg2.append(i)
+
+        print(seg2)
+        for i in spouse.genes:
+        	if i in self.genes[pivot:]:
+        		seg1.append(i)
+        print(seg1)
+
+        child1 = self.genes[0:pivot] + seg1
+        child2 = seg2 + spouse.genes[pivot:]
+        print(child1)
+        print(child2)
+        # 保留self的[0:pivot], 和spouse的[pivot:]
         return Chromosome(child1), Chromosome(child2)
 
     def mutate(self):
+    	# 随机互换两个城市
         i = random.randint(0, cxt.size-1)
         j = random.randint(0, cxt.size-1)
         self.genes[i], self.genes[j] = self.genes[j], self.genes[i]
@@ -141,6 +163,13 @@ if __name__ == "__main__":
     print(c.genes)
     c.mutate()
     print(c.genes)
+
+    d = Chromosome()
+    print(d.genes)
+
+    c1, c2 = c.mate(d)
+    print(c1.genes)
+    print(c2.genes)
     # pop = Population()
     # while True:
     #     pop.next_generation()
