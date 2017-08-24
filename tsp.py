@@ -10,7 +10,7 @@
 
 import random
 import math
-
+import numpy as np
 
 class City(object):
     def __init__(self, name, pos):
@@ -53,16 +53,16 @@ class Chromosome(object):
             self.genes = list(range(0, cxt.size))
             random.shuffle(self.genes)
 
-        self.score = None       # Distance
+        self.cost = None       # Distance
         self.mutate()           #
-        self.calc_score()       # Distance
+        self.calc_cost()       # Distance
 
-    def calc_score(self):
+    def calc_cost(self):
     	# 计算距离
         # 计算所有元素的value和weight之和
-        self.score = 0
-        for i in range(-1, cxt.size-1):
-            self.score += cxt.distance[self.genes[i]][self.genes[i+1]]
+        self.cost = 0
+        for i in range(-1, len(self.genes)-1):
+            self.cost += cxt.distance[self.genes[i]][self.genes[i+1]]
 
     def mate(self, spouse):
     	# 3 5 7 2 4 1 6 0
@@ -82,41 +82,37 @@ class Chromosome(object):
         	if i in spouse.genes[0:pivot]:
         		seg2.append(i)
 
-        print(seg2)
+        # print(seg2)
         for i in spouse.genes:
         	if i in self.genes[pivot:]:
         		seg1.append(i)
-        print(seg1)
+        # print(seg1)
 
         child1 = self.genes[0:pivot] + seg1
         child2 = seg2 + spouse.genes[pivot:]
-        print(child1)
-        print(child2)
+        # print(child1)
+        # print(child2)
         # 保留self的[0:pivot], 和spouse的[pivot:]
         return Chromosome(child1), Chromosome(child2)
 
     def mutate(self):
     	# 随机互换两个城市
-        i = random.randint(0, cxt.size-1)
-        j = random.randint(0, cxt.size-1)
+        i = random.randint(0, len(self.genes)-1)
+        j = random.randint(0, len(self.genes)-1)
         self.genes[i], self.genes[j] = self.genes[j], self.genes[i]
 
 
 class Population(object):
     def __init__(self, size=1000):
         self.size = size        # Number of chromosomes
-        self.members = [
-            Chromosome([random.choice([0, 1])
-                        for _ in range(Context.size)])
-            for _ in range(self.size)]  # Fill with random members
-
+        self.members = [Chromosome() for _ in range(self.size)]    # Fill with random members
         self.i_generation = 0
 
     def sort(self):
-        self.members.sort(key=lambda x: x.score, reverse=True)
+        self.members.sort(key=lambda x: x.cost)
 
     def mate_and_cull(self):
-        quota = int(Context.mating_rate*self.size/2)
+        quota = int(cxt.mating_rate*self.size/2)
         elites = self.members[:quota]
         random.shuffle(elites)      # randomize the elites
 
@@ -138,12 +134,11 @@ class Population(object):
     def display(self):
         print("Iteration {0}".format(self.i_generation))
 
+        # Print the top 6 members
         for i in range(6):
-            print("v={0}, w={1} score={2}:{3}".format(
-                self.members[i].value,
-                self.members[i].weight,
-                self.members[i].score,
-                self.members[i].genes,
+            print("cost={cost}:{genes}".format(
+                cost = self.members[i].cost,
+                genes = self.members[i].genes
             ))
 
         print()
@@ -170,8 +165,27 @@ if __name__ == "__main__":
     c1, c2 = c.mate(d)
     print(c1.genes)
     print(c2.genes)
+
+    # t = Chromosome([0,1,2])
+    # print(t.genes)
+    # print(t.cost)
     # pop = Population()
     # while True:
-    #     pop.next_generation()
-    #     if pop.i_generation % 100 == 0:
-    #         pop.display()
+    #      pop.next_generation()
+    #      if pop.i_generation % 10 == 0:
+    #          pop.display()
+
+    # generate the sequence:
+    cit = np.array(cxt.elements)
+    res = np.array([15, 12, 19, 16, 13, 10, 6, 1, 3, 7, 9, 5, 2, 0, 4, 8, 11, 14, 17, 18])
+    seq = cit[res]
+    print(seq)
+    import matplotlib.pyplot as plt
+    x = np.array([el.pos[0] for el in seq])
+    y = np.array([el.pos[1] for el in seq])
+    for xx, yy in zip(x, y):
+        print(xx, yy)
+
+    # plt.ion()
+    plt.plot(x, y)
+    plt.show()
