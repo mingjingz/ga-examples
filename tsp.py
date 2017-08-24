@@ -11,6 +11,11 @@
 import random
 import math
 import numpy as np
+import matplotlib
+# matplotlib.use('MacOSX')
+
+import matplotlib.pyplot as plt
+
 
 class City(object):
     def __init__(self, name, pos):
@@ -102,6 +107,17 @@ class Chromosome(object):
         self.genes[i], self.genes[j] = self.genes[j], self.genes[i]
 
 
+class Visualizer(object):
+    def __init__(self, n_axes):
+        self.n_axes = n_axes
+        self.fig = plt.figure(1)
+        plt.ion()
+
+    def update(self):
+        pass
+
+
+
 class Population(object):
     def __init__(self, size=1000):
         self.size = size        # Number of chromosomes
@@ -169,23 +185,45 @@ if __name__ == "__main__":
     # t = Chromosome([0,1,2])
     # print(t.genes)
     # print(t.cost)
-    # pop = Population()
-    # while True:
-    #      pop.next_generation()
-    #      if pop.i_generation % 10 == 0:
-    #          pop.display()
+    pop = Population()
+    plt.ion()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = np.array([1, 2, 3])
+    y = np.array([4, 5, 6])
+
+    hl, = ax.plot(x, y)
+    plt.draw()
+    # import time
+    # time.sleep(20)
+
+    plt.pause(0.001)
+    #fig.show()
+
+    while True:
+         pop.next_generation()
+         if pop.i_generation % 10 == 0:
+             pop.display()
+         hl.set_ydata(y + pop.i_generation / 100.0)
+         #plt.draw()
+         # fig.canvas.draw()
+         # fig.canvas.flush_events()
+         # plt.pause(0.00001)
 
     # generate the sequence:
-    cit = np.array(cxt.elements)
-    res = np.array([15, 12, 19, 16, 13, 10, 6, 1, 3, 7, 9, 5, 2, 0, 4, 8, 11, 14, 17, 18])
-    seq = cit[res]
-    print(seq)
-    import matplotlib.pyplot as plt
-    x = np.array([el.pos[0] for el in seq])
-    y = np.array([el.pos[1] for el in seq])
-    for xx, yy in zip(x, y):
-        print(xx, yy)
+    # cit = np.array(cxt.elements)
+    # res = np.array([15, 12, 19, 16, 13, 10, 6, 1, 3, 7, 9, 5, 2, 0, 4, 8, 11, 14, 17, 18])
+    # seq = cit[res]
+    # print(seq)
+    # import matplotlib.pyplot as plt
+    # x = np.array([el.pos[0] for el in seq])
+    # y = np.array([el.pos[1] for el in seq])
+    # for xx, yy in zip(x, y):
+    #     print(xx, yy)
 
     # plt.ion()
-    plt.plot(x, y)
-    plt.show()
+    # fig = plt.figure()
+    # ax = plt.subplot(151)
+    # plt.plot(x, y)
+    # plt.show()
