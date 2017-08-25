@@ -11,8 +11,6 @@
 import random
 import math
 import numpy as np
-import matplotlib
-# matplotlib.use('MacOSX')
 
 import matplotlib.pyplot as plt
 
@@ -108,14 +106,40 @@ class Chromosome(object):
 
 
 class Visualizer(object):
-    def __init__(self, n_axes):
-        self.n_axes = n_axes
-        self.fig = plt.figure(1)
+    def __init__(self, genes):
+        self.n_axes = len(genes)
         plt.ion()
+        self.fig = plt.figure(figsize=(12,3))
+        self.axs = []
+
+        self.cit = np.array(cxt.elements)
+        
+
+        # for xx, yy in zip(x, y):
+        #     print(xx, yy)
+
+        # plt.ion()
+        # fig = plt.figure()
+        # ax = plt.subplot(151)
+        # plt.plot(x, y)
+        # plt.show()
+
+        for i, g in enumerate(genes):
+            ax = self.fig.add_subplot(1, self.n_axes, i+1)
+            self.axs.append(ax)
+            x, y = self.get_path(g)
+            ax.plot(x, y)
+
+        plt.pause(0.001)
+
+    def get_path(self, genes):
+        seq = self.cit[np.array(genes)]
+        x = np.array([el.pos[0] for el in seq])
+        y = np.array([el.pos[1] for el in seq])
+        return x, y
 
     def update(self):
         pass
-
 
 
 class Population(object):
@@ -159,6 +183,9 @@ class Population(object):
 
         print()
 
+    def get_top_genes(self, n):
+        return [m.genes for m in self.members[0:n]]
+        
     def is_solved(self):
         if self.i_generation >= 200:
             return True
@@ -186,31 +213,32 @@ if __name__ == "__main__":
     # print(t.genes)
     # print(t.cost)
     pop = Population()
-    plt.ion()
+#     plt.ion()
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    x = np.array([1, 2, 3])
-    y = np.array([4, 5, 6])
+#     fig = plt.figure(figsize=(12,3))
+#     ax = fig.add_subplot(151)
+#    # fig, axs = plt.subplots(1, 5, )
+#     x = np.array([1, 2, 3])
+#     y = np.array([4, 5, 6])
 
-    hl, = ax.plot(x, y)
-    plt.draw()
-    # import time
-    # time.sleep(20)
+#     hl, = ax.plot(x, y)
+#     # plt.draw()
 
-    plt.pause(0.001)
-    #fig.show()
+#     plt.pause(0.001)
+
+    pop.next_generation()
+    vis = Visualizer(pop.get_top_genes(5))
 
     while True:
          pop.next_generation()
          if pop.i_generation % 10 == 0:
              pop.display()
-         hl.set_ydata(y + pop.i_generation / 100.0)
+        #  hl.set_ydata(y + pop.i_generation / 100.0)
          #plt.draw()
          # fig.canvas.draw()
          # fig.canvas.flush_events()
-         # plt.pause(0.00001)
-
+         plt.pause(0.001)
+    plt.show()
     # generate the sequence:
     # cit = np.array(cxt.elements)
     # res = np.array([15, 12, 19, 16, 13, 10, 6, 1, 3, 7, 9, 5, 2, 0, 4, 8, 11, 14, 17, 18])
