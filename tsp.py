@@ -111,14 +111,14 @@ class Visualizer(object):
         self.pop = population
         # self.len(genes)
         plt.ion()
-        self.fig = plt.figure(figsize=(12,3))
+        self.fig = plt.figure(figsize=(15,4))
         self.fig.suptitle("Generation {0}".format(self.pop.i_generation))
         self.axs = []
         self.plots = []
         self.cit = np.array(cxt.elements)
 
         for i, m in enumerate(self.pop.members[:self.n_axes]):  # g in enumerate(genes):
-            ax = self.fig.add_subplot(1, self.n_axes, i+1)
+            ax = self.fig.add_subplot(1, self.n_axes, i+1, aspect='equal')
             if i > 0:
                 ax.tick_params(labelleft="off")
             ax.set_title('len={:10.4f}'.format(self.pop.members[i].cost))
@@ -127,8 +127,9 @@ class Visualizer(object):
             self.axs.append(ax)
             x, y = self._get_path(i)
             hl, = ax.plot(x, y, marker='o', markerfacecolor='red')
-            self.plots.append(hl)
-
+            hl_start, = ax.plot(x[0], y[0], marker='^', markersize=12, markerfacecolor='green')
+            hl_end, = ax.plot(x[-1], y[-1], marker='8', markersize=12, markerfacecolor='red')
+            self.plots.append((hl, hl_start, hl_end))
 
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
@@ -145,8 +146,12 @@ class Visualizer(object):
     def update(self):
         for i, m in enumerate(self.pop.members[:self.n_axes]):
             x, y = self._get_path(i)
-            self.plots[i].set_xdata(x)
-            self.plots[i].set_ydata(y)
+            self.plots[i][0].set_xdata(x)
+            self.plots[i][0].set_ydata(y)
+            self.plots[i][1].set_xdata(x[0])
+            self.plots[i][1].set_ydata(y[0])
+            self.plots[i][2].set_xdata(x[-1])
+            self.plots[i][2].set_ydata(y[-1])
             self.axs[i].set_title('len={:10.4f}'.format(self.pop.members[i].cost))
 
         self.fig.suptitle("Generation {0}".format(self.pop.i_generation))
