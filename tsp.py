@@ -106,46 +106,59 @@ class Chromosome(object):
 
 
 class Visualizer(object):
-    def __init__(self, genes):
-        self.n_axes = len(genes)
+    def __init__(self, population, top_n):
+        self.n_axes = top_n
+        self.pop = population
+        # self.len(genes)
         plt.ion()
         self.fig = plt.figure(figsize=(12,3))
+        self.fig.suptitle("Generation {0}".format(self.pop.i_generation))
         self.axs = []
-
+        self.plots = []
         self.cit = np.array(cxt.elements)
-        
 
-        # for xx, yy in zip(x, y):
-        #     print(xx, yy)
-
-        # plt.ion()
-        # fig = plt.figure()
-        # ax = plt.subplot(151)
-        # plt.plot(x, y)
-        # plt.show()
-
-        for i, g in enumerate(genes):
+        for i, m in enumerate(self.pop.members[:self.n_axes]):  # g in enumerate(genes):
             ax = self.fig.add_subplot(1, self.n_axes, i+1)
+            if i > 0:
+                ax.tick_params(labelleft="off")
+            ax.set_title('len={:10.4f}'.format(self.pop.members[i].cost))
+            ax.grid()
+
             self.axs.append(ax)
-            x, y = self.get_path(g)
-            ax.plot(x, y)
+            x, y = self._get_path(i)
+            hl, = ax.plot(x, y, marker='o', markerfacecolor='red')
+            self.plots.append(hl)
+
+
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
         plt.pause(0.001)
 
-    def get_path(self, genes):
-        seq = self.cit[np.array(genes)]
+    def _get_path(self, index):
+        """ Build a connected path from genes
+        """
+        seq = self.cit[np.array(self.pop.members[index].genes)]
         x = np.array([el.pos[0] for el in seq])
         y = np.array([el.pos[1] for el in seq])
         return x, y
 
     def update(self):
-        pass
+        for i, m in enumerate(self.pop.members[:self.n_axes]):
+            x, y = self._get_path(i)
+            self.plots[i].set_xdata(x)
+            self.plots[i].set_ydata(y)
+            self.axs[i].set_title('len={:10.4f}'.format(self.pop.members[i].cost))
+
+        self.fig.suptitle("Generation {0}".format(self.pop.i_generation))
+
+        plt.pause(0.001)
 
 
 class Population(object):
     def __init__(self, size=1000):
         self.size = size        # Number of chromosomes
         self.members = [Chromosome() for _ in range(self.size)]    # Fill with random members
+        self.sort()
         self.i_generation = 0
 
     def sort(self):
@@ -163,7 +176,6 @@ class Population(object):
         n_to_cull = len(new_child)
 
         self.members = self.members[:-n_to_cull] + new_child
-
 
     def next_generation(self):
         self.sort()
@@ -227,17 +239,19 @@ if __name__ == "__main__":
 #     plt.pause(0.001)
 
     pop.next_generation()
-    vis = Visualizer(pop.get_top_genes(5))
+    vis = Visualizer(pop, 5)
 
     while True:
-         pop.next_generation()
-         if pop.i_generation % 10 == 0:
-             pop.display()
+        pop.next_generation()
+        if pop.i_generation % 10 == 0:
+            pop.display()
+
+        vis.update()
         #  hl.set_ydata(y + pop.i_generation / 100.0)
          #plt.draw()
          # fig.canvas.draw()
          # fig.canvas.flush_events()
-         plt.pause(0.001)
+        plt.pause(0.001)
     plt.show()
     # generate the sequence:
     # cit = np.array(cxt.elements)
